@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const mindarThree = new MindARThree({
     container,
-    imageTargetSrc: "./assets/target.mind", // наш маркер
+    imageTargetSrc: "./assets/targets.mind", // наш маркер
   });
 
   const { renderer, scene, camera } = mindarThree;
