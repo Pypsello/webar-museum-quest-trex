@@ -19,11 +19,28 @@
       width: 100%;
       height: 100%;
       background: #000;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #fff;
+    }
+
+    #status-overlay {
+      position: fixed;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      z-index: 10;
+      max-width: 90%;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <!-- ВАЖНО: никаких контейнеров и оверлеев, только сцена -->
+  <div id="status-overlay">Инициализация камеры...</div>
+
   <a-scene
     vr-mode-ui="enabled: false"
     embedded
@@ -34,7 +51,6 @@
       <a-asset-item id="trexModel" src="assets/trex.glb"></a-asset-item>
     </a-assets>
 
-    <!-- Маркер -->
     <a-marker
       id="trex-marker"
       type="pattern"
@@ -54,13 +70,18 @@
   </a-scene>
 
   <script>
-    // Немного логов для понимания, что происходит с камерой
     window.addEventListener('DOMContentLoaded', () => {
       const scene = document.querySelector('a-scene');
-      const marker = document.querySelector('#trex-marker');
+      const status = document.getElementById('status-overlay');
+      const marker = document.getElementById('trex-marker');
+
+      function setStatus(text) {
+        status.textContent = text;
+        console.log('[STATUS]', text);
+      }
 
       scene.addEventListener('arjs-video-loaded', () => {
-        console.log('[AR.js] Видео с камеры загружено');
+        setStatus('Камера запущена. Наведи на маркер T-Rex.');
       });
 
       scene.addEventListener('camera-init', () => {
@@ -69,14 +90,17 @@
 
       scene.addEventListener('camera-error', (e) => {
         console.error('[AR.js] Ошибка камеры:', e);
+        setStatus('Ошибка доступа к камере. Проверь разрешения в браузере.');
       });
 
       marker.addEventListener('markerFound', () => {
         console.log('Маркер найден');
+        setStatus('Маркер найден! Должен появиться T-Rex.');
       });
 
       marker.addEventListener('markerLost', () => {
         console.log('Маркер потерян');
+        setStatus('Камера работает. Найди маркер T-Rex.');
       });
     });
   </script>
