@@ -2,13 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>WebAR квест: T-Rex в музее</title>
+  <title>WebAR T-Rex — тест камеры</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
-  <!-- AR.js для A-Frame (маркерная webAR) -->
+  <!-- AR.js для A-Frame -->
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
 
   <style>
@@ -18,202 +18,65 @@
       overflow: hidden;
       width: 100%;
       height: 100%;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #000;
-      color: #fff;
-    }
-
-    /* Сцена AR занимает весь экран */
-    #ar-container {
-      position: fixed;
-      inset: 0;
-    }
-
-    /* Оверлей интерфейса поверх AR */
-    #ui-overlay {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 12px;
-      box-sizing: border-box;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: center;
-      pointer-events: none;
-    }
-
-    .top-bar span {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 14px;
-    }
-
-    /* Панель для будущего квиза */
-    #quiz-panel {
-      pointer-events: auto;
-      align-self: center;
-      margin-bottom: 16px;
-      max-width: 90%;
-      width: 360px;
-
-      background: rgba(0, 0, 0, 0.8);
-      border-radius: 16px;
-      padding: 16px;
-      box-sizing: border-box;
-      backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-
-      display: none; /* по умолчанию скрыт – покажем, когда увидим маркер */
-    }
-
-    #quiz-title {
-      margin: 0 0 8px 0;
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    #quiz-text {
-      margin: 0;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .badge-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4ade80; /* зелёная точка */
-      animation: pulse 1.4s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      70% { transform: scale(1.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 0; }
-    }
-
-    /* Класс, чтобы легко показывать/прятать панель */
-    .visible {
-      display: block !important;
     }
   </style>
 </head>
-
 <body>
-  <!-- Контейнер для AR-сцены -->
-  <div id="ar-container">
-    <a-scene
-      vr-mode-ui="enabled: false"
-      embedded
-      renderer="logarithmicDepthBuffer: true; antialias: true;"
-      arjs="sourceType: webcam; debugUIEnabled: false;">
+  <!-- ВАЖНО: никаких контейнеров и оверлеев, только сцена -->
+  <a-scene
+    vr-mode-ui="enabled: false"
+    embedded
+    renderer="logarithmicDepthBuffer: true; antialias: true;"
+    arjs="sourceType: webcam; debugUIEnabled: true;">
 
-      <!-- Предзагрузка ассетов -->
-      <a-assets>
-        <!-- Путь к модели T-Rex -->
-        <a-asset-item id="trexModel" src="assets/trex.glb"></a-asset-item>
-      </a-assets>
+    <a-assets>
+      <a-asset-item id="trexModel" src="assets/trex.glb"></a-asset-item>
+    </a-assets>
 
-      <!-- Маркер (pattern marker) -->
-      <a-marker
-        id="trex-marker"
-        type="pattern"
-        url="assets/marker.patt"
-        emitevents="true">
+    <!-- Маркер -->
+    <a-marker
+      id="trex-marker"
+      type="pattern"
+      url="assets/marker.patt"
+      emitevents="true">
 
-        <!-- 3D модель T-Rex, привязанная к маркеру -->
-        <a-entity
-          gltf-model="#trexModel"
-          position="0 0 0"
-          rotation="0 90 0"
-          scale="0.4 0.4 0.4"
-          animation-mixer>
-        </a-entity>
-      </a-marker>
+      <a-entity
+        gltf-model="#trexModel"
+        position="0 0 0"
+        rotation="0 90 0"
+        scale="0.4 0.4 0.4"
+        animation-mixer>
+      </a-entity>
+    </a-marker>
 
-      <!-- Камера -->
-      <a-entity camera></a-entity>
-
-    </a-scene>
-  </div>
-
-  <!-- Оверлей с подсказкой и будущим квизом -->
-  <div id="ui-overlay">
-    <div class="top-bar">
-      <span>Наведи камеру на маркер T-Rex, чтобы начать квест</span>
-    </div>
-
-    <div id="quiz-panel">
-      <div class="badge">
-        <span class="badge-dot"></span>
-        <span id="marker-status-text">Маркер обнаружен</span>
-      </div>
-
-      <h2 id="quiz-title">Квиз про тираннозавра</h2>
-      <p id="quiz-text">
-        Как только увидим маркер, здесь появятся вопросы (3 из 3).  
-        Сейчас реализована только логика AR и старт квиза.
-      </p>
-    </div>
-  </div>
+    <a-entity camera></a-entity>
+  </a-scene>
 
   <script>
-    // Флаг, чтобы квиз не стартовал каждый раз при "мигании" маркера
-    let quizStarted = false;
-
-    function startQuizOnce() {
-      if (quizStarted) return;
-      quizStarted = true;
-
-      // Пока просто показываем панель. Позже сюда добавим вопросы и логику ответов.
-      const quizPanel = document.getElementById('quiz-panel');
-      const quizText = document.getElementById('quiz-text');
-
-      quizPanel.classList.add('visible');
-      quizText.textContent = 'Маркер найден! Сейчас T-Rex появился на карточке. Далее добавим вопросы (3/3) и логику победы.';
-
-      console.log('Квиз запущен (заглушка).');
-      // Здесь позже сделаем:
-      // initQuiz();
-    }
-
+    // Немного логов для понимания, что происходит с камерой
     window.addEventListener('DOMContentLoaded', () => {
+      const scene = document.querySelector('a-scene');
       const marker = document.querySelector('#trex-marker');
-      const markerStatusText = document.getElementById('marker-status-text');
 
-      if (!marker) {
-        console.warn('Маркер #trex-marker не найден в сцене.');
-        return;
-      }
-
-      // Событие, когда маркер найден камерой
-      marker.addEventListener('markerFound', () => {
-        console.log('Маркер найден');
-        markerStatusText.textContent = 'Маркер обнаружен — T-Rex активен!';
-        startQuizOnce();
+      scene.addEventListener('arjs-video-loaded', () => {
+        console.log('[AR.js] Видео с камеры загружено');
       });
 
-      // Событие, когда маркер пропал из поля зрения
+      scene.addEventListener('camera-init', () => {
+        console.log('[AR.js] Камера инициализирована');
+      });
+
+      scene.addEventListener('camera-error', (e) => {
+        console.error('[AR.js] Ошибка камеры:', e);
+      });
+
+      marker.addEventListener('markerFound', () => {
+        console.log('Маркер найден');
+      });
+
       marker.addEventListener('markerLost', () => {
         console.log('Маркер потерян');
-        markerStatusText.textContent = 'Маркер потерян — найдите его снова';
       });
     });
   </script>
