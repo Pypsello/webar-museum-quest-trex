@@ -1,61 +1,98 @@
 // ar.js
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MindARThree } from "mindar-image-three";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const container = document.querySelector("#container");
   const hint = document.querySelector("#hint");
 
+  const setHint = (text) => {
+    if (hint) hint.textContent = text;
+    console.log("[HINT]", text);
+  };
+
+  console.log("Создаём MindARThree...");
   const mindarThree = new MindARThree({
     container,
-    imageTargetSrc: "./assets/targets.mind", // наш маркер
+    imageTargetSrc: "./assets/target.mind", // наш таргет
   });
 
   const { renderer, scene, camera } = mindarThree;
 
-  // якорь, привязанный к первому таргету из target.mind
+  // Немного настроек рендерера для мобильных
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(container.clientWidth, container.clientHeight);
+
+  // Свет
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.8);
+  scene.add(hemi);
+
+  // Якорь по первому таргету из target.mind
   const anchor = mindarThree.addAnchor(0);
 
-  // простой объект: куб
+  // DEBUG-куб — чтобы 100% увидеть, что таргет работает
   const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(0.6, 0.6, 0.6),
+    new THREE.BoxGeometry(0.4, 0.4, 0.4),
     new THREE.MeshStandardMaterial({
       color: 0x00ffcc,
       metalness: 0.4,
-      roughness: 0.3,
-    })
+      roughness: 0.4,
+    }),
   );
-  cube.position.set(0, 0, 0);
+  cube.position.set(-0.5, 0, 0);
   anchor.group.add(cube);
 
-  // свет
-  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.6);
-  scene.add(light);
+  // T-Rex модель
+  const loader = new GLTFLoader();
+  let trex = null;
 
-  // когда таргет виден — показываем подсказку про квест
+  loader.load(
+    "./assets/trex.glb",
+    (gltf) => {
+      trex = gltf.scene;
+      trex.scale.set(0.35, 0.35, 0.35);
+      trex.position.set(0.4, -0.2, 0);
+      anchor.group.add(trex);
+      console.log("Модель T-Rex загружена.");
+    },
+    undefined,
+    (error) => {
+      console.error("Ошибка загрузки trex.glb:", error);
+      setHint("Ошибка загрузки модели T-Rex (см. консоль).");
+    },
+  );
+
+  // Реакция на появление/пропадание таргета
   anchor.onTargetFound = () => {
-    if (hint) {
-      hint.textContent = "Маркер найден! Здесь будет квест про T-Rex.";
-    }
+    console.log("TARGET FOUND");
+    setHint("Маркер найден! Видишь куб и T-Rex? (потом здесь будет квиз)");
   };
 
-  // когда таргет теряется — просим снова навести камеру
   anchor.onTargetLost = () => {
-    if (hint) {
-      hint.textContent = "Маркер потерян. Наведи камеру на маркер ещё раз.";
-    }
+    console.log("TARGET LOST");
+    setHint("Маркер потерян. Наведи камеру на картинку ещё раз.");
   };
 
-  // старт AR
+  // Старт AR
   await mindarThree.start();
-  if (hint) {
-    hint.textContent = "Камера запущена. Наведи на маркер.";
-  }
+  console.log("MindAR запущен.");
+  setHint("Камера запущена. Наведи на маркер T-Rex Quest.");
 
-  // рендер-цикл
+  // Рендер-цикл
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
+
+    if (trex) {
+      trex.rotation.y += 0.01;
+    }
+
     renderer.render(scene, camera);
+  });
+
+  // Обработка ресайза
+  window.addEventListener("resize", () => {
+    renderer.setSize(container.clientWidth, container.clientHeight);
   });
 });

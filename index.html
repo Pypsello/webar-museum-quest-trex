@@ -2,10 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>WebAR квест — T-Rex</title>
+  <title>WebAR: T-Rex Quest</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- importmap как в документации MindAR -->
+  <!-- importmap для three + loaders + mindar -->
   <script type="importmap">
   {
     "imports": {
@@ -43,16 +43,16 @@
       border-radius: 999px;
       font-size: 14px;
       z-index: 10;
-      text-align: center;
       max-width: 90%;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div id="container"></div>
-  <div id="hint">Наведи камеру на маркер, чтобы увидеть AR-объект</div>
+  <div id="hint">Инициализация камеры…</div>
 
-  <!-- Вся логика AR вынесена в отдельный файл -->
+  <!-- Основная логика AR -->
   <script type="module" src="./ar.js"></script>
 </body>
 </html>
