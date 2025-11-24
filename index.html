@@ -40,6 +40,23 @@
 </head>
 <body>
   <div id="status-overlay">Инициализация камеры...</div>
+    <script>
+    // Предварительный запрос камеры, чтобы браузер точно показал диалог
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(stream => {
+            console.log('Доступ к камере есть, закрываю тестовый поток');
+            // Закрываем временный поток, AR.js потом сам запустит свой
+            stream.getTracks().forEach(t => t.stop());
+        })
+        .catch(err => {
+            console.error('Нет доступа к камере:', err.name, err.message);
+            alert('Сайт не получил доступ к камере. Разреши камеру в настройках браузера и перезагрузи страницу.');
+        });
+    } else {
+        console.error('navigator.mediaDevices.getUserMedia не поддерживается');
+    }
+    </script>
 
   <a-scene
     vr-mode-ui="enabled: false"
