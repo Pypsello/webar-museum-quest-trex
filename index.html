@@ -1,125 +1,34 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <title>WebAR T-Rex — тест камеры</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebAR Quest — T-Rex</title>
 
-  <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"></script>
 
-  <!-- AR.js для A-Frame -->
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <!-- MindAR (image tracking) -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
 
   <style>
-    html, body {
+    body, html {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      width: 100%;
-      height: 100%;
       background: #000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #fff;
     }
-
-    #status-overlay {
-      position: fixed;
-      left: 50%;
-      top: 10px;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 14px;
-      z-index: 10;
-      max-width: 90%;
-      text-align: center;
+    #container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
     }
   </style>
 </head>
 <body>
-  <div id="status-overlay">Инициализация камеры...</div>
-    <script>
-    // Предварительный запрос камеры, чтобы браузер точно показал диалог
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then(stream => {
-            console.log('Доступ к камере есть, закрываю тестовый поток');
-            // Закрываем временный поток, AR.js потом сам запустит свой
-            stream.getTracks().forEach(t => t.stop());
-        })
-        .catch(err => {
-            console.error('Нет доступа к камере:', err.name, err.message);
-            alert('Сайт не получил доступ к камере. Разреши камеру в настройках браузера и перезагрузи страницу.');
-        });
-    } else {
-        console.error('navigator.mediaDevices.getUserMedia не поддерживается');
-    }
-    </script>
+  <div id="container"></div>
 
-  <a-scene
-    vr-mode-ui="enabled: false"
-    embedded
-    renderer="logarithmicDepthBuffer: true; antialias: true;"
-    arjs="sourceType: webcam; debugUIEnabled: true;">
-
-    <a-assets>
-      <a-asset-item id="trexModel" src="assets/trex.glb"></a-asset-item>
-    </a-assets>
-
-    <a-marker
-      id="trex-marker"
-      type="pattern"
-      url="assets/marker.patt"
-      emitevents="true">
-
-      <a-entity
-        gltf-model="#trexModel"
-        position="0 0 0"
-        rotation="0 90 0"
-        scale="0.4 0.4 0.4"
-        animation-mixer>
-      </a-entity>
-    </a-marker>
-
-    <a-entity camera></a-entity>
-  </a-scene>
-
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const scene = document.querySelector('a-scene');
-      const status = document.getElementById('status-overlay');
-      const marker = document.getElementById('trex-marker');
-
-      function setStatus(text) {
-        status.textContent = text;
-        console.log('[STATUS]', text);
-      }
-
-      scene.addEventListener('arjs-video-loaded', () => {
-        setStatus('Камера запущена. Наведи на маркер T-Rex.');
-      });
-
-      scene.addEventListener('camera-init', () => {
-        console.log('[AR.js] Камера инициализирована');
-      });
-
-      scene.addEventListener('camera-error', (e) => {
-        console.error('[AR.js] Ошибка камеры:', e);
-        setStatus('Ошибка доступа к камере. Проверь разрешения в браузере.');
-      });
-
-      marker.addEventListener('markerFound', () => {
-        console.log('Маркер найден');
-        setStatus('Маркер найден! Должен появиться T-Rex.');
-      });
-
-      marker.addEventListener('markerLost', () => {
-        console.log('Маркер потерян');
-        setStatus('Камера работает. Найди маркер T-Rex.');
-      });
-    });
-  </script>
+  <!-- Твой AR код -->
+  <script type="module" src="./ar.js"></script>
 </body>
 </html>
