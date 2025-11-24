@@ -1,40 +1,61 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.module.js";
-import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js";
+// ar.js
+import * as THREE from "three";
+import { MindARThree } from "mindar-image-three";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const container = document.querySelector("#container");
+  const hint = document.querySelector("#hint");
+
   const mindarThree = new MindARThree({
-    container: document.querySelector("#container"),
-    imageTargetSrc: "./assets/target.mind",  // твой маркер
+    container,
+    imageTargetSrc: "./assets/target.mind", // наш маркер
   });
 
   const { renderer, scene, camera } = mindarThree;
 
-  // === 1. Якорь для появления модели ===
+  // якорь, привязанный к первому таргету из target.mind
   const anchor = mindarThree.addAnchor(0);
 
-  // === 2. Загружаем T-Rex ===
-  const loader = new THREE.GLTFLoader();
-  let trex;
+  // простой объект: куб
+  const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(0.6, 0.6, 0.6),
+    new THREE.MeshStandardMaterial({
+      color: 0x00ffcc,
+      metalness: 0.4,
+      roughness: 0.3,
+    })
+  );
+  cube.position.set(0, 0, 0);
+  anchor.group.add(cube);
 
-  loader.load("./assets/trex.glb", (gltf) => {
-    trex = gltf.scene;
-    trex.scale.set(0.4, 0.4, 0.4);
-    trex.position.set(0, -0.2, 0);
-    anchor.group.add(trex);
-  });
-
-  // === 3. Свет ===
-  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
+  // свет
+  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.6);
   scene.add(light);
 
-  // === 4. Запускаем AR ===
-  await mindarThree.start();
-
-  // === 5. Анимационный рендер-цикл ===
-  renderer.setAnimationLoop(() => {
-    if (trex) {
-      trex.rotation.y += 0.01;
+  // когда таргет виден — показываем подсказку про квест
+  anchor.onTargetFound = () => {
+    if (hint) {
+      hint.textContent = "Маркер найден! Здесь будет квест про T-Rex.";
     }
+  };
+
+  // когда таргет теряется — просим снова навести камеру
+  anchor.onTargetLost = () => {
+    if (hint) {
+      hint.textContent = "Маркер потерян. Наведи камеру на маркер ещё раз.";
+    }
+  };
+
+  // старт AR
+  await mindarThree.start();
+  if (hint) {
+    hint.textContent = "Камера запущена. Наведи на маркер.";
+  }
+
+  // рендер-цикл
+  renderer.setAnimationLoop(() => {
+    cube.rotation.x += 0.02;
+    cube.rotation.y += 0.03;
     renderer.render(scene, camera);
   });
 });
