@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>WebAR T-Rex</title>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+    <!-- AR.js (маркерный режим) -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.4/aframe/build/aframe-ar.js"></script>
+
+    <style>
+      body, html {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+
+  <body>
+    <a-scene
+      embedded
+      arjs="sourceType: webcam; detectionMode: mono; debugUIEnabled: false;"
+    >
+
+      <!-- Маркер -->
+      <a-marker type="pattern" url="marker.patt">
+        <!-- T-Rex модель -->
+        <a-entity 
+          gltf-model="url(assets/trex.glb)"
+          scale="0.4 0.4 0.4"
+          position="0 0 0"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear;"
+        >
+        </a-entity>
+      </a-marker>
+
+      <!-- Камера -->
+      <a-entity camera></a-entity>
+
+    </a-scene>
+  </body>
+</html>
